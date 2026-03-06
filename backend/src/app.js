@@ -1,11 +1,14 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 //routes imports
 import authRouter from "./routes/auth.routes.js";
 
 const app = express();
+
+app.use("/uploads", express.static("public/uploads"));
 
 app.use(
   cors({

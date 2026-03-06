@@ -15,13 +15,16 @@ const findUserByEmail = async (email) => {
   ]);
   return result[0];
 };
-const findUserById= async (id) => {
-  const [result] = await db.query("SELECT * FROM users WHERE id = ?", [
-    id,
+const findUserById = async (id) => {
+  const [result] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+  return result[0];
+};
+const findUserByUsername = async (username) => {
+  const [result] = await db.query("SELECT * FROM users WHERE username = ?", [
+    username,
   ]);
   return result[0];
 };
-
 
 const updateUserModel = async (id, data) => {
   const fields = Object.keys(data)
@@ -54,4 +57,5 @@ export {
   updateUserModel,
   deleteUserModel,
   findUserByEmail,
+  findUserByUsername,
 };

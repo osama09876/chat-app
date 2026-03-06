@@ -1,34 +1,50 @@
 import {
   createUserModel,
   findUserByEmail,
+  findUserByUsername,
 } from "../models/auth.models.js";
 import ApiResponse from "../utils/response.util.js";
 import bcrypt from "bcryptjs";
+import jsonwebtoken from "jsonwebtoken";
 
 const registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    // console.log(req.body);
 
     if (!username || !email || !password) {
       return ApiResponse.error(res, "All fields are required.", 404);
     }
 
     const existUser = await findUserByEmail(email);
+    const existingUsername = await findUserByUsername(username);
+    // console.log(existUser);
+    if (existingUsername) {
+      return ApiResponse.error(
+        res,
+        "This username already exist choose different one.",
+        404,
+      );
+    }
 
     if (existUser) {
       return ApiResponse.error(res, "User already exist", 400);
     }
 
     let filePath = null;
-    const file = req.file?.avatar;
 
     if (req.file) {
-      filePath = `/uploads/images/${file.filename}`;
+      filePath = `/uploads/images/${req.file.filename}`;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = createUserModel(username, email, hashedPassword, filePath);
+    const user = await createUserModel(
+      username,
+      email,
+      hashedPassword,
+      filePath,
+    );
 
     if (!user) {
       return ApiResponse.error(res, "Something went while creating user.", 400);
@@ -45,4 +61,47 @@ const registerUser = async (req, res) => {
   }
 };
 
-export { registerUser };
+const loginUser = async (req, res) => {
+  try {
+    const { usernameOrEmail, password } = req.body;
+
+    if (!usernameOrEmail) {
+      return ApiResponse.error(res, "Username or email is required", 404);
+    }
+    if (!password) {
+      return ApiResponse.error(res, "Password is required", 404);
+    }
+
+    if (usernameOrEmail.includes(".com") && usernameOrEmail.includes("@")) {
+      console.log("email hai yh");
+    } else {
+      const user = await findUserByUsername(usernameOrEmail);
+
+      if (!user) {
+        return ApiResponse.error(res, "User not found");
+      }
+
+      const comparePassword = await bcrypt.compare(password, user.password);
+
+      // console.log(comparePassword);
+      if (!comparePassword) {
+        return ApiResponse.error(res, "Invalid credentials.");
+      }
+
+      const token = jsonwebtoken.sign(
+        { id: user.id },
+        process.env.TOKEN_SECRETE,
+        { expiresIn: "90d" },
+      );
+    }
+  } catch (error) {
+    return ApiResponse.error(
+      res,
+      "Something went wrong while login.",
+      500,
+      error,
+    );
+  }
+};
+
+export { registerUser, loginUser };
