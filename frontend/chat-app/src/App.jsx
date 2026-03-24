@@ -1,10 +1,14 @@
 import { useState } from "react";
+import { Route, Routes } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import ChatAppDasboard from "./pages/ChatAppDasboard";
 
 function App() {
   return (
-    <>
-      <h1 className="text-2xl">Hello</h1>
-    </>
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/dashboard/:name" element={<ChatAppDasboard />} />
+    </Routes>
   );
 }
 
