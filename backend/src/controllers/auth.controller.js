@@ -73,7 +73,6 @@ const loginUser = async (req, res) => {
     }
 
     if (usernameOrEmail.includes(".com") && usernameOrEmail.includes("@")) {
-      console.log("email hai yh");
     } else {
       const user = await findUserByUsername(usernameOrEmail);
 
@@ -93,6 +92,12 @@ const loginUser = async (req, res) => {
         process.env.TOKEN_SECRETE,
         { expiresIn: "90d" },
       );
+
+      res.status(200).cookies("access-token", token).json({
+        status: "success",
+        message: "User logged in successfully.",
+        user: user,
+      });
     }
   } catch (error) {
     return ApiResponse.error(
