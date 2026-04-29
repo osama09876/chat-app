@@ -12,7 +12,7 @@ app.use("/uploads", express.static("public/uploads"));
 
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:3000", // your frontend URL
     credentials: true,
   }),
 );
