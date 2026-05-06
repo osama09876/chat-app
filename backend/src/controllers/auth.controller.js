@@ -128,12 +128,19 @@ const loginUser = async (req, res) => {
         token: token,
       };
 
+      const { password: _, ...userWithoutPassword } = user;
+
+      const userData = {
+        ...userWithoutPassword,
+        token,
+      };
+
       await updateUserModel(user.id, data);
 
       res.status(200).cookie("access-token", token, cookieOption).json({
         status: "success",
         message: "User logged in successfully.",
-        user: user,
+        user: userData,
       });
     }
   } catch (error) {
@@ -150,7 +157,6 @@ const userLogout = async (req, res) => {
   try {
     const { id } = req.user;
     console.log(req);
-    
 
     let data = {
       token: null,

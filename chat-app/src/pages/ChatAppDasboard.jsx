@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import { selectUser } from "../features/auth/authSelectors";
+import { userLogout } from "../features/auth/authSlice";
 
 const usersDummy = [
   { id: 1, name: "Ali" },
@@ -11,10 +14,23 @@ const usersDummy = [
 const ChatAppDasboard = () => {
   const { name } = useParams();
   const [selectedUser, setSelectedUser] = useState(null);
+  const [open, setOpen] = useState(false);
+
+  const dispatch = useDispatch();
+
+  const user = useSelector(selectUser);
+  const navigate = useNavigate();
+
+  const logout = async () => {
+    await dispatch(userLogout());
+
+    setOpen(false);
+
+    navigate("/login");
+  };
 
   return (
     <div className="h-screen w-full flex bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-
       {/* SIDEBAR */}
       <div
         className={`
@@ -23,13 +39,38 @@ const ChatAppDasboard = () => {
         `}
       >
         {/* Profile */}
-        <div className="p-5 border-b border-white/10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">
-            {name?.charAt(0).toUpperCase()}
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">
+              {user.username?.charAt(0).toUpperCase()}
+            </div>
+
+            <div>
+              <h2 className="font-semibold">{user.username}</h2>
+              <p className="text-xs text-gray-400">Online</p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-semibold">{name}</h2>
-            <p className="text-xs text-gray-400">Online</p>
+
+          <div className="relative">
+            <button
+              onClick={() => setOpen(!open)}
+              className="w-10 h-10 rounded-full hover:bg-white/10 transition flex items-center justify-center"
+            >
+              <i className="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+
+            {/* Dropdown */}
+            {open && (
+              <div className="absolute right-0 top-12 w-40 bg-gray-800 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                <button
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm hover:bg-red-500/20 hover:text-red-400 transition"
+                  onClick={logout}
+                >
+                  <i className="fa-solid fa-right-from-bracket"></i>
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -77,7 +118,6 @@ const ChatAppDasboard = () => {
           <>
             {/* Header */}
             <div className="p-4 md:p-5 border-b border-white/10 flex items-center gap-3 bg-white/5 backdrop-blur-xl">
-              
               {/* Back button (mobile only) */}
               <button
                 onClick={() => setSelectedUser(null)}
