@@ -1,25 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { selectUser } from "../features/auth/authSelectors";
+import { selectUser, selectUsers } from "../features/auth/authSelectors";
 import { userLogout } from "../features/auth/authSlice";
-
-const usersDummy = [
-  { id: 1, name: "Ali" },
-  { id: 2, name: "Ahmed" },
-  { id: 3, name: "Sara" },
-  { id: 4, name: "Zain" },
-];
+import CreateGroupModal from "./GroupModal";
+import { allUsers } from "../features/auth/usersSlice";
+import { createGroup } from "../features/conversations/conversationSlice";
+import { toast } from "react-toastify";
 
 const ChatAppDasboard = () => {
   const { name } = useParams();
   const [selectedUser, setSelectedUser] = useState(null);
   const [open, setOpen] = useState(false);
+  const [openModal, setModalOpen] = useState(false);
 
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    dispatch(allUsers());
+  }, [dispatch]);
+
   const user = useSelector(selectUser);
+  const users = useSelector(selectUsers);
   const navigate = useNavigate();
+  // console.log(user);
 
   const logout = async () => {
     await dispatch(userLogout());
@@ -29,9 +33,37 @@ const ChatAppDasboard = () => {
     navigate("/login");
   };
 
+  const usersDummy = [
+    { id: 1, name: "Ali" },
+    { id: 2, name: "Ahmed" },
+    { id: 3, name: "Sara" },
+    { id: 4, name: "Zain" },
+  ];
+
+  const openGroupModal = () => {
+    setModalOpen(true);
+    setOpen(false);
+  };
+
   return (
     <div className="h-screen w-full flex bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
       {/* SIDEBAR */}
+
+      <CreateGroupModal
+        isOpen={openModal}
+        onClose={() => setModalOpen(false)}
+        users={users}
+        onCreate={(data) => {
+          console.log(data);
+          // API call here
+          try {
+            dispatch(createGroup(data));
+            toast.success("Group has been created");
+          } catch (error) {
+            toast.error(error ?? "Error");
+          }
+        }}
+      />
       <div
         className={`
           ${selectedUser ? "hidden md:flex" : "flex"}
@@ -42,7 +74,7 @@ const ChatAppDasboard = () => {
         <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">
-              {user.username?.charAt(0).toUpperCase()}
+              {user?.username ? user.username.charAt(0).toUpperCase() : "?"}
             </div>
 
             <div>
@@ -69,6 +101,13 @@ const ChatAppDasboard = () => {
                   <i className="fa-solid fa-right-from-bracket"></i>
                   Logout
                 </button>
+                <button
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm hover:bg-red-500/20 hover:text-red-400 transition"
+                  onClick={openGroupModal}
+                >
+                  <i className="fa-solid fa-users"></i>
+                  Create Group
+                </button>
               </div>
             )}
           </div>
@@ -85,25 +124,26 @@ const ChatAppDasboard = () => {
 
         {/* Users */}
         <div className="flex-1 overflow-y-auto">
-          {usersDummy.map((user) => (
-            <div
-              key={user.id}
-              onClick={() => setSelectedUser(user)}
-              className={`flex items-center gap-3 p-4 cursor-pointer transition ${
-                selectedUser?.id === user.id
-                  ? "bg-indigo-600/30"
-                  : "hover:bg-white/10"
-              }`}
-            >
-              <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center">
-                {user.name.charAt(0)}
+          {users &&
+            users.map((user) => (
+              <div
+                key={user.id}
+                onClick={() => setSelectedUser(user)}
+                className={`flex items-center gap-3 p-4 cursor-pointer transition ${
+                  selectedUser?.id === user.id
+                    ? "bg-indigo-600/30"
+                    : "hover:bg-white/10"
+                }`}
+              >
+                <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center">
+                  {user?.username ? user.username.charAt(0).toUpperCase() : "U"}
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium">{user.username}</h3>
+                  <p className="text-xs text-gray-400">Last message...</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-medium">{user.name}</h3>
-                <p className="text-xs text-gray-400">Last message...</p>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 
@@ -127,11 +167,11 @@ const ChatAppDasboard = () => {
               </button>
 
               <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center">
-                {selectedUser.name.charAt(0)}
+                {selectedUser.username.charAt(0)}
               </div>
 
               <div>
-                <h2 className="font-semibold">{selectedUser.name}</h2>
+                <h2 className="font-semibold">{selectedUser.username}</h2>
                 <p className="text-xs text-green-400">Online</p>
               </div>
             </div>

@@ -51,6 +51,13 @@ const deleteUserModel = async (id) => {
   return result;
 };
 
+const getAllUserModel = async (cuurentUserId) => {
+  const [result] = await db.query("select * from users where id != ?", [
+    cuurentUserId,
+  ]);
+  return result;
+};
+
 export {
   createUserModel,
   findUserById,
@@ -58,4 +65,5 @@ export {
   deleteUserModel,
   findUserByEmail,
   findUserByUsername,
+  getAllUserModel,
 };

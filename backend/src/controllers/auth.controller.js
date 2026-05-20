@@ -3,6 +3,7 @@ import {
   findUserByEmail,
   findUserByUsername,
   updateUserModel,
+  getAllUserModel,
 } from "../models/auth.models.js";
 import ApiResponse from "../utils/response.util.js";
 import bcrypt from "bcryptjs";
@@ -108,14 +109,18 @@ const loginUser = async (req, res) => {
       const user = await findUserByUsername(usernameOrEmail);
 
       if (!user) {
-        return ApiResponse.error(res, "User not found");
+        return ApiResponse.error(res, "User not found", 404);
       }
 
-      const comparePassword = await bcrypt.compare(password, user.password);
+      if (!user.password) {
+        return ApiResponse.error(res, "User password missing in DB", 500);
+      }
 
-      // console.log(comparePassword);
-      if (!comparePassword) {
-        return ApiResponse.error(res, "Invalid credentials.");
+      // check password
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) {
+        return ApiResponse.error(res, "Invalid credentials", 401);
       }
 
       const token = jsonwebtoken.sign(
@@ -177,4 +182,15 @@ const userLogout = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, userLogout };
+const getAllUsers = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const users = await getAllUserModel(id);
+
+    return ApiResponse.success(res, "Users fetched successfully", users, 200);
+  } catch (error) {
+    return ApiResponse.error(res, "Something went wrong", 500, error);
+  }
+};
+
+export { registerUser, loginUser, userLogout, getAllUsers };

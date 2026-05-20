@@ -11,8 +11,8 @@ const getSingleConversationModel = (id) => {
   return result;
 };
 
-const createModel = (name, is_group, created_by) => {
-  const [result] = db.query(
+const createModel = async (name, is_group, created_by) => {
+  const [result] = await db.query(
     "insert into conversations (name,is_group,created_by,created_at) values (?, ?, ?, NOW())",
     [name, is_group, created_by],
   );

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { registerAPI, loginAPI, logoutAPI } from "./authAPI.js";
+import { registerAPI, loginAPI, logoutAPI, getAllUsersAPI } from "./authAPI.js";
 
 const initialState = {
   user: JSON.parse(localStorage.getItem("user")) || null,
@@ -29,7 +29,7 @@ export const loginUser = createAsyncThunk(
     try {
       const res = await loginAPI(data);
       // console.log(res.data);
-      
+
       return res.data;
     } catch (error) {
       return thunkApi.rejectWithValue(error.response?.data || "Login failed");

@@ -7,8 +7,12 @@ import {
   deleteConversationModel,
 } from "../models/conversation.model.js";
 import ApiResponse from "../utils/response.util.js";
+import {
+  createConversationMemberModel,
+  createGroupConversationMemberModel,
+} from "../models/conversation_members.model.js";
 
-const createPrivateConversation = async (req, res) => {
+export const createPrivateConversation = async (req, res) => {
   try {
     const { receiver_id } = req.body;
 
@@ -44,8 +48,59 @@ const createPrivateConversation = async (req, res) => {
 
     const conversationID = conversation.insertId;
 
-    
+    await createConversationMemberModel(
+      conversationID,
+      currentUser,
+      conversationID,
+      receiver_id,
+    );
+
+    return res.json({
+      success: true,
+      conversationId,
+    });
   } catch (error) {
     return ApiResponse.error(res, "Somwthing went wrong", 500, error);
+  }
+};
+
+export const createGroupConversation = async (req, res) => {
+  try {
+    const { name, members = [] } = req.body;
+    const { id: currentUser } = req.user;
+
+    if (!name) {
+      return ApiResponse.error(res, "Group name is required.", 400);
+    }
+
+    const conversation = await createModel(name, 1, currentUser);
+
+    const conversationId = conversation.insertId;
+    console.log(conversationId);
+
+    // add admin
+    await createGroupConversationMemberModel(
+      conversationId,
+      currentUser,
+      "admin",
+    );
+
+    // add members safely
+    if (Array.isArray(members) && members.length > 0) {
+      for (const memberId of members) {
+        await createGroupConversationMemberModel(
+          conversationId,
+          memberId,
+          "member",
+        );
+      }
+    }
+
+    return res.json({
+      success: true,
+      conversationId,
+    });
+  } catch (error) {
+    return ApiResponse.error(res, "Something went wrong", 500, error);
   }
 };

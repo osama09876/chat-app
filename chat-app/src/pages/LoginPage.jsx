@@ -7,6 +7,7 @@ import {
   selectUser,
 } from "../features/auth/authSelectors";
 import { loginUser } from "../features/auth/authSlice";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
   const [showPass, setShowPass] = useState(false);
@@ -35,9 +36,11 @@ const LoginPage = () => {
         }),
       ).unwrap();
 
-      navigate("/");
+      toast.success("Login successful");
+      navigate("/"); // only success
     } catch (err) {
-      console.log(err);
+      toast.error(err || "Login failed");
+      // no redirect here
     }
   };
 
@@ -93,7 +96,9 @@ const LoginPage = () => {
             {loading ? "Loading..." : "Login"}
           </button>
 
-          {error && <p>{error}</p>}
+          {error && (
+            <p className="text-red-500">{error?.message || "Login failed"}</p>
+          )}
 
           {/* Divider */}
           <div className="text-center text-gray-400 text-sm">or</div>
@@ -101,9 +106,12 @@ const LoginPage = () => {
           {/* Signup */}
           <p className="text-center text-sm text-gray-600">
             Don’t have an account?{" "}
-            <span className="text-indigo-600 cursor-pointer hover:underline">
+            <a
+              href="/register"
+              className="text-indigo-600 cursor-pointer hover:underline"
+            >
               Sign Up
-            </span>
+            </a>
           </p>
         </div>
       </div>

@@ -5,6 +5,7 @@ import path from "path";
 
 //routes imports
 import authRouter from "./routes/auth.routes.js";
+import conversationRouter from "./routes/conversation.routes.js";
 
 const app = express();
 
@@ -21,5 +22,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/conversations", conversationRouter);
 
 export { app };
